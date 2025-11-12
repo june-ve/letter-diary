@@ -2,6 +2,9 @@ package com.juneve.letterdiary.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,6 +23,10 @@ public class User {
 
     @Column(nullable = false, length = 20)
     private String nickname;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder
     public User(String email, String password, String nickname) {

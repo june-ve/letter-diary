@@ -30,6 +30,7 @@ public class DiaryMessage {
     private DiaryThread thread;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
