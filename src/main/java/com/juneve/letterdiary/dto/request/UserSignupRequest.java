@@ -1,5 +1,6 @@
 package com.juneve.letterdiary.dto.request;
 
+import com.juneve.letterdiary.entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -25,4 +26,12 @@ public class UserSignupRequest {
     @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
     @Size(max = 20, message = "닉네임은 20자 이하로 입력해주세요.")
     private String nickname;
+
+    public User toEntity(String encodedPassword) {
+        return User.builder()
+                .email(this.email)
+                .password(encodedPassword)
+                .nickname(this.nickname)
+                .build();
+    }
 }
