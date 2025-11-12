@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,6 +28,9 @@ public class DiaryThread {
 
     @Column(nullable = false, length = 60)
     private String title;
+
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiaryMessage> messages = new ArrayList<>();
 
     @Builder
     public DiaryThread(User userA, User userB, String title) {
