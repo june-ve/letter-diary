@@ -14,6 +14,11 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_a_id", "user_b_id"})
+        }
+)
 public class DiaryThread {
 
     @Id
