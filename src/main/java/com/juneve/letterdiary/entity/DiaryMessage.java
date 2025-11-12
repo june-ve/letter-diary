@@ -39,4 +39,12 @@ public class DiaryMessage {
         this.sender = sender;
         this.thread = thread;
     }
+
+    public static DiaryMessage of(String content, User sender, DiaryThread thread) {
+        return DiaryMessage.builder()
+                .content(content)
+                .sender(sender)
+                .thread(thread)
+                .build();
+    }
 }
