@@ -1,6 +1,7 @@
 package com.juneve.letterdiary.controller;
 
 import com.juneve.letterdiary.dto.request.DiaryMessageRequest;
+import com.juneve.letterdiary.dto.response.DiaryMessagePageResponse;
 import com.juneve.letterdiary.dto.response.DiaryMessageResponse;
 import com.juneve.letterdiary.entity.DiaryMessage;
 import com.juneve.letterdiary.entity.User;
@@ -28,5 +29,17 @@ public class DiaryMessageController {
         DiaryMessageResponse response = DiaryMessageResponse.from(message);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<DiaryMessagePageResponse> getMessagePage(
+            @AuthenticationPrincipal User loginUser,
+            @PathVariable Long threadId,
+            @RequestParam(defaultValue = "0") int page) {
+
+        DiaryMessagePageResponse response =
+                diaryMessageService.getMessagePage(loginUser, threadId, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

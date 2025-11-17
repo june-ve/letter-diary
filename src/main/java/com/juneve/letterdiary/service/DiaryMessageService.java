@@ -1,12 +1,15 @@
 package com.juneve.letterdiary.service;
 
 import com.juneve.letterdiary.dto.request.DiaryMessageRequest;
+import com.juneve.letterdiary.dto.response.DiaryMessagePageResponse;
 import com.juneve.letterdiary.entity.DiaryMessage;
 import com.juneve.letterdiary.entity.DiaryThread;
 import com.juneve.letterdiary.entity.User;
 import com.juneve.letterdiary.repository.DiaryMessageRepository;
 import com.juneve.letterdiary.repository.DiaryThreadRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,5 +42,31 @@ public class DiaryMessageService {
         if (!isParticipant) {
             throw new IllegalStateException("이 일기장에 접근할 권한이 없습니다.");
         }
+    }
+
+    /**
+    * 특정 일기장의 메시지 한 개 조회
+    */
+    @Transactional(readOnly = true)
+    public DiaryMessagePageResponse getMessagePage(User loginUser, long threadId, int page) {
+
+        DiaryThread thread = findThreadById(threadId);
+        validateParticipant(loginUser, thread);
+
+        Page<DiaryMessage> messagePage = findPagedMessage(thread, page);
+        DiaryMessage message = messagePage.hasContent()
+                ? messagePage.getContent().getFirst()
+                : null;
+
+        return DiaryMessagePageResponse.from(
+                message,
+                messagePage.getNumber(),
+                messagePage.getTotalPages()
+        );
+    }
+
+    private Page<DiaryMessage> findPagedMessage(DiaryThread thread, int page) {
+        PageRequest pageable = PageRequest.of(page, 1);
+        return messageRepository.findByThreadOrderByCreatedAtDesc(thread, pageable);
     }
 }
