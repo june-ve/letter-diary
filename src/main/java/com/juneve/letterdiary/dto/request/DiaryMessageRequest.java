@@ -5,6 +5,5 @@ import lombok.Getter;
 @Getter
 public class DiaryMessageRequest {
 
-    private Long threadId;
     private String content;
 }

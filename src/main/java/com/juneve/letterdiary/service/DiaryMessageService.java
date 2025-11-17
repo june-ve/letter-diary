@@ -15,26 +15,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DiaryMessageService {
 
-    private final DiaryMessageRepository diaryMessageRepository;
-    private final DiaryThreadRepository diaryThreadRepository;
+    private final DiaryMessageRepository messageRepository;
+    private final DiaryThreadRepository threadRepository;
 
-    public DiaryMessage writeMessage(User sender, DiaryMessageRequest request) {
-        DiaryThread thread = findThreadById(request.getThreadId());
+    /**
+     * 특정 일기장에 메시지 작성
+     */
+    public DiaryMessage writeMessage(User sender, Long threadId, DiaryMessageRequest request) {
+        DiaryThread thread = findThreadById(threadId);
         validateParticipant(sender, thread);
 
         DiaryMessage message = DiaryMessage.of(request.getContent(), sender, thread);
-        return diaryMessageRepository.save(message);
+        return messageRepository.save(message);
     }
 
     private DiaryThread findThreadById(Long threadId) {
-        return diaryThreadRepository.findById(threadId)
+        return threadRepository.findById(threadId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 일기장이 존재하지 않습니다."));
     }
 
-    private void validateParticipant(User sender, DiaryThread thread) {
-        boolean isParticipant = thread.getUserA().equals(sender) || thread.getUserB().equals(sender);
+    private void validateParticipant(User user, DiaryThread thread) {
+        boolean isParticipant = thread.getUserA().equals(user) || thread.getUserB().equals(user);
         if (!isParticipant) {
-            throw new IllegalStateException("이 일기장에 작성할 권한이 없습니다.");
+            throw new IllegalStateException("이 일기장에 접근할 권한이 없습니다.");
         }
     }
 }

@@ -4,6 +4,8 @@ import com.juneve.letterdiary.entity.DiaryMessage;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 public class DiaryMessageResponse {
@@ -12,7 +14,7 @@ public class DiaryMessageResponse {
     private String content;
     private String senderNickname;
     private Long threadId;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public static DiaryMessageResponse from(DiaryMessage message) {
         return DiaryMessageResponse.builder()
@@ -20,7 +22,7 @@ public class DiaryMessageResponse {
                 .content(message.getContent())
                 .senderNickname(message.getSender().getNickname())
                 .threadId(message.getThread().getId())
-                .createdAt(message.getCreatedAt().toString())
+                .createdAt(message.getCreatedAt())
                 .build();
     }
 }

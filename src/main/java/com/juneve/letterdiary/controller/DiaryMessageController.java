@@ -9,24 +9,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/message")
+@RequestMapping("/api/thread/{threadId}/messages")
 public class DiaryMessageController {
 
     private final DiaryMessageService diaryMessageService;
 
-    @PostMapping("/write")
+    @PostMapping
     public ResponseEntity<DiaryMessageResponse> writeMessage(
             @AuthenticationPrincipal User sender,
+            @PathVariable Long threadId,
             @RequestBody DiaryMessageRequest request) {
 
-        DiaryMessage message = diaryMessageService.writeMessage(sender, request);
+        DiaryMessage message = diaryMessageService.writeMessage(sender, threadId, request);
         DiaryMessageResponse response = DiaryMessageResponse.from(message);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
