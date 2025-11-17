@@ -15,12 +15,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/thread")
+@RequestMapping("/api/threads")
 public class DiaryThreadController {
 
     private final DiaryThreadService diaryThreadService;
 
-    @PostMapping("/create/{userBId}")
+    /**
+     * 교환일기 생성
+     * POST /api/threads/{userBId}
+     */
+    @PostMapping("/{userBId}")
     public ResponseEntity<DiaryThreadResponse> createThread(
             @AuthenticationPrincipal User userA,
             @PathVariable Long userBId) {
@@ -33,7 +37,11 @@ public class DiaryThreadController {
                 .body(response);
     }
 
-    @GetMapping("/list")
+    /**
+     * 사용자가 참여 중인 교환일기 목록 조회
+     * GET /api/threads
+     */
+    @GetMapping
     public ResponseEntity<List<DiaryThreadListResponse>> getMyThreads(
             @AuthenticationPrincipal User user) {
 

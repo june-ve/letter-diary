@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/thread/{threadId}/messages")
+@RequestMapping("/api/threads/{threadId}/messages")
 public class DiaryMessageController {
 
     private final DiaryMessageService diaryMessageService;
 
+    /**
+     * 메시지 작성
+     * POST /api/threads/{threadId}/messages
+     */
     @PostMapping
     public ResponseEntity<DiaryMessageResponse> writeMessage(
             @AuthenticationPrincipal User sender,
@@ -31,6 +35,10 @@ public class DiaryMessageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * 특정 페이지 메시지 조회
+     * GET /api/threads/{threadId}/messages?page=0
+     */
     @GetMapping
     public ResponseEntity<DiaryMessagePageResponse> getMessagePage(
             @AuthenticationPrincipal User loginUser,
