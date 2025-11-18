@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DiaryMessagePageResponse {
 
+    private String threadTitle;
     private Long messageId;
     private String content;
     private String senderNickname;
@@ -27,12 +28,14 @@ public class DiaryMessagePageResponse {
                     null,
                     null,
                     null,
+                    null,
                     currentPage,
                     totalPages
             );
         }
 
         return new DiaryMessagePageResponse(
+                message.getThread().getTitle(),
                 message.getId(),
                 message.getContent(),
                 message.getSender().getNickname(),
