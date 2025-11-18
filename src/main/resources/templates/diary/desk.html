@@ -21,6 +21,20 @@
             margin-bottom: 14px;
         }
 
+        .add-btn {
+            padding: 6px 12px;
+            background: #b56d57;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-btn:hover {
+            background: #9e5641;
+        }
+
         .notebook-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -53,24 +67,81 @@
             height: 38px;
             overflow: hidden;
         }
+
+        .email-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: #f7f0e7;
+            padding: 22px;
+            border-radius: 10px;
+            width: 320px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 8px;
+            background: #fffdf8;
+            font-size: 14px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background: #b56d57;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-content button:hover {
+            background: #9e5641;
+        }
     </style>
 </head>
 
 <body>
 <th:block th:replace="~{fragments/header :: headerFragment}"></th:block>
+
 <section class="desk">
-    <div class="desk-header">책상 위의 교환일기들</div>
+    <div class="desk-header">
+        책상 위의 교환일기들
+        <button class="add-btn" id="addThreadBtn">+ 교환일기 추가</button>
+    </div>
     <div class="notebook-grid" id="notebookGrid"></div>
 </section>
 
-<script>
-    async function loadThreads() {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            window.location.href = "/login";
-            return;
-        }
+<!-- 이메일 입력 모달 -->
+<div class="email-modal" id="emailModal">
+    <div class="modal-content">
+        <div style="margin-bottom: 8px; font-size: 15px; font-weight: 600;">함께 일기를 작성할 사람의 이메일</div>
+        <input type="email" id="partnerEmailInput" placeholder="example@email.com">
+        <button id="submitEmailBtn">일기장 만들기</button>
+    </div>
+</div>
 
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+    }
+
+    async function loadThreads() {
         const res = await fetch("/api/threads", {
             headers: { "Authorization": "Bearer " + token }
         });
@@ -103,6 +174,54 @@
             grid.appendChild(div);
         });
     }
+
+    /* =========================
+        교환일기 추가 기능
+       ========================= */
+    const addBtn = document.getElementById("addThreadBtn");
+    const emailModal = document.getElementById("emailModal");
+    const submitEmailBtn = document.getElementById("submitEmailBtn");
+
+    addBtn.onclick = () => {
+        emailModal.style.display = "flex";
+    };
+
+    // 모달 바깥 클릭 → 닫기
+    emailModal.onclick = (e) => {
+        if (e.target === emailModal) {
+            emailModal.style.display = "none";
+        }
+    };
+
+    submitEmailBtn.onclick = async () => {
+        const email = document.getElementById("partnerEmailInput").value.trim();
+        if (!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        const res = await fetch("/api/threads", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ partnerEmail: email })
+        });
+
+        if (res.ok) {
+            emailModal.style.display = "none";
+            document.getElementById("partnerEmailInput").value = "";
+            alert("교환일기가 생성되었습니다!");
+            loadThreads();
+        } else if (res.status === 404) {
+            alert("해당 이메일의 사용자가 없습니다.");
+        } else if (res.status === 409) {
+            alert("이미 해당 사용자와 교환일기가 존재합니다.");
+        } else {
+            alert("일기장을 생성하지 못했습니다.");
+        }
+    };
 
     loadThreads();
 </script>
