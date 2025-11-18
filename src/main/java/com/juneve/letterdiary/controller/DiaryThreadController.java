@@ -1,5 +1,6 @@
 package com.juneve.letterdiary.controller;
 
+import com.juneve.letterdiary.dto.request.CreateThreadRequest;
 import com.juneve.letterdiary.dto.response.DiaryThreadListResponse;
 import com.juneve.letterdiary.dto.response.DiaryThreadResponse;
 import com.juneve.letterdiary.entity.DiaryThread;
@@ -22,14 +23,14 @@ public class DiaryThreadController {
 
     /**
      * 교환일기 생성
-     * POST /api/threads/{userBId}
+     * POST /api/threads
      */
-    @PostMapping("/{userBId}")
+    @PostMapping
     public ResponseEntity<DiaryThreadResponse> createThread(
             @AuthenticationPrincipal User userA,
-            @PathVariable Long userBId) {
+            @RequestBody CreateThreadRequest request) {
 
-        DiaryThread thread = diaryThreadService.createThread(userA, userBId);
+        DiaryThread thread = diaryThreadService.createThread(userA, request.getPartnerEmail());
         DiaryThreadResponse response = DiaryThreadResponse.from(thread);
 
         return ResponseEntity

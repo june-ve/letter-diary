@@ -25,8 +25,8 @@ public class DiaryThreadService {
     /**
      * 교환일기 생성
      */
-    public DiaryThread createThread(User userA, Long userBId) {
-        User userB = findUserById(userBId);
+    public DiaryThread createThread(User userA, String partnerEmail) {
+        User userB = findUserByEmail(partnerEmail);
         validateDuplicateThread(userA, userB);
 
         String title = generateTitle(userA, userB);
@@ -35,8 +35,8 @@ public class DiaryThreadService {
         return diaryThreadRepository.save(thread);
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("상대 사용자가 존재하지 않습니다."));
     }
 
