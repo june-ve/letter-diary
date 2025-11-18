@@ -50,8 +50,7 @@
             color: #4a3c3c;
         }
 
-        input[type="email"],
-        input[type="password"] {
+        input {
             width: 100%;
             padding: 10px 12px;
             border-radius: 8px;
@@ -74,6 +73,22 @@
 
         .btn-login:hover {
             background: #9e5641;
+        }
+
+        .btn-signup {
+            width: 100%;
+            background: #d3b8a1;
+            border: none;
+            color: #3b2f2f;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-signup:hover {
+            background: #c3a992;
         }
 
         .error-message {
@@ -103,6 +118,59 @@
             opacity: 1;
             transform: translateX(-50%) translateY(-4px);
         }
+
+        /* Signup Modal */
+        .modal-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            width: 360px;
+            background: #fdf7ea;
+            padding: 24px 28px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #d0c2b4;
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: #b56d57;
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -126,7 +194,38 @@
 
         <button class="btn-login" id="loginBtn">로그인</button>
 
+        <button class="btn-signup" id="openSignupModal">회원가입</button>
+
         <div class="error-message" id="errorMessage">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+    </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal-bg" id="signupModal">
+    <div class="modal">
+        <div class="modal-title">회원가입</div>
+
+        <div class="input-group">
+            <label class="input-label">이메일</label>
+            <input type="email" id="signupEmail">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">비밀번호 (8~20자)</label>
+            <input type="password" id="signupPassword">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">닉네임</label>
+            <input type="text" id="signupNickname">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" id="closeSignupModal">취소</button>
+            <button class="btn-submit" id="submitSignup">가입하기</button>
+        </div>
+
+        <div class="error-message" id="signupError"></div>
     </div>
 </div>
 
@@ -143,6 +242,7 @@
         setTimeout(() => toast.classList.remove("show"), 2000);
     }
 
+    /* ------------------ 로그인 ------------------ */
     loginBtn.addEventListener("click", async () => {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
@@ -184,6 +284,47 @@
             errorMessage.textContent = "서버와 연결할 수 없습니다.";
         }
     });
+
+    /* ------------------ 회원가입 모달 ------------------ */
+    const signupModal = document.getElementById("signupModal");
+    const openSignupBtn = document.getElementById("openSignupModal");
+    const closeSignupBtn = document.getElementById("closeSignupModal");
+    const signupError = document.getElementById("signupError");
+
+    openSignupBtn.onclick = () => signupModal.style.display = "flex";
+    closeSignupBtn.onclick = () => {
+        signupModal.style.display = "none";
+        signupError.style.display = "none";
+    };
+
+    /* ------------------ 회원가입 요청 ------------------ */
+    document.getElementById("submitSignup").onclick = async () => {
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value.trim();
+        const nickname = document.getElementById("signupNickname").value.trim();
+
+        if (!email || !password || !nickname) {
+            signupError.style.display = "block";
+            signupError.textContent = "모든 항목을 입력해주세요.";
+            return;
+        }
+
+        const res = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, nickname })
+        });
+
+        if (res.ok) {
+            showToast("회원가입 완료! 이제 로그인하세요 ✨");
+            signupModal.style.display = "none";
+            return;
+        }
+
+        const errData = await res.json();
+        signupError.style.display = "block";
+        signupError.textContent = errData.message || "회원가입에 실패했습니다.";
+    };
 </script>
 
 </body>
