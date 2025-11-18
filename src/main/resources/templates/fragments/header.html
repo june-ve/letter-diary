@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="headerFragment">
+
+<header class="site-header">
+    <div class="header-left">
+        <a href="/diary" class="logo">LetterDiary</a>
+    </div>
+
+    <nav class="header-nav">
+        <a href="/diary" class="nav-item">책상</a>
+
+        <!-- 로그인 상태에 따라 동적 전환 -->
+        <a id="loginBtn" href="/login" class="nav-item auth-btn">로그인</a>
+        <a id="logoutBtn" href="#" class="nav-item auth-btn" style="display:none;">로그아웃</a>
+    </nav>
+</header>
+
+<style>
+    .site-header {
+        width: 100%;
+        padding: 14px 28px;
+        background: #f7f0e7;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .logo {
+        font-size: 20px;
+        font-weight: 700;
+        color: #3b2f2f;
+        text-decoration: none;
+    }
+
+    .header-nav {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+    }
+
+    .nav-item {
+        text-decoration: none;
+        font-size: 14px;
+        color: #4a3c3c;
+        opacity: 0.85;
+    }
+
+    .nav-item:hover {
+        opacity: 1;
+        font-weight: 600;
+    }
+
+    .auth-btn {
+        padding: 6px 12px;
+        background: #d8c8b4;
+        border-radius: 8px;
+        color: #3b2f2f;
+    }
+
+    .auth-btn:hover {
+        background: #c5b8a4;
+    }
+</style>
+
+<script>
+    // 로그인 여부에 따라 버튼 제어
+    document.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        if (token) {
+            loginBtn.style.display = "none";
+            logoutBtn.style.display = "inline-block";
+
+            logoutBtn.onclick = () => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            };
+        } else {
+            loginBtn.style.display = "inline-block";
+            logoutBtn.style.display = "none";
+        }
+    });
+</script>
+
+</th:block>
+</html>

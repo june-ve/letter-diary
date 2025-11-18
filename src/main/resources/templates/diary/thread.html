@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>LetterDiary - 교환일기</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e6ddcf;
+      color: #3b2f2f;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    /* 펼쳐진 일기장 패널 */
+    .diary-panel {
+      flex: 1;
+      margin: auto;
+      max-width: 980px;
+      background: radial-gradient(circle at top, #f9f5ec 0, #f0e6d5 60%, #e1d3c0 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .diary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding-bottom: 8px;
+    }
+
+    .diary-title {
+      font-size: 23px;
+      font-weight: 700;
+    }
+
+    .diary-partner-label {
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    .diary-body {
+      flex: 1;
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .diary-left, .diary-right {
+      flex: 1;
+      background: #fdf7ea;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+      position: relative;
+    }
+
+    /* 스프링(바인딩) 느낌 */
+    .diary-left::before,
+    .diary-right::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: repeating-linear-gradient(
+              180deg,
+              rgba(196, 167, 132, 0.8),
+              rgba(196, 167, 132, 0.8) 2px,
+              rgba(228, 205, 176, 0.8) 2px,
+              rgba(228, 205, 176, 0.8) 4px
+      );
+      opacity: 0.3;
+    }
+
+    .diary-left::before {
+      left: -4px;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .diary-right::before {
+      right: -4px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .diary-section-title {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    .message-meta {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+
+    .message-content {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .message-empty {
+      opacity: 0.5;
+      font-size: 13px;
+    }
+
+    .navigation-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+
+    .nav-btn {
+      padding: 8px 14px;
+      background: #d8c8b4;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .diary-right textarea {
+      width: 100%;
+      height: 140px;
+      resize: none;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .send-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #b56d57;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #9c5843;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+  </style>
+</head>
+
+<body>
+<th:block th:replace="~{fragments/header :: headerFragment}"></th:block>
+
+<div class="app-container">
+
+  <section class="diary-panel">
+
+    <header class="diary-header">
+      <div class="diary-title" id="diaryTitle">교환일기</div>
+      <div class="diary-partner-label" id="diaryPartnerLabel"></div>
+    </header>
+
+    <div class="diary-body">
+
+      <!-- 왼쪽 페이지: 메시지 한 장 -->
+      <div class="diary-left">
+        <div id="messageContainer">
+          <div class="message-empty">(아직 작성된 일기가 없습니다.)</div>
+        </div>
+
+        <div class="navigation-row">
+          <button class="nav-btn" id="prevBtn">◀ 이전</button>
+          <button class="nav-btn" id="nextBtn">다음 ▶</button>
+        </div>
+      </div>
+
+      <!-- 오른쪽 페이지: 새 일기 작성 -->
+      <div class="diary-right">
+        <div class="diary-section-title">새 일기 쓰기</div>
+        <textarea id="newMessageContent" placeholder="오늘 하루를 편지처럼 적어보세요..."></textarea>
+
+        <div class="send-row">
+          <button class="btn btn-outline" id="downloadBtn">txt 다운로드</button>
+          <button class="btn btn-primary" id="sendBtn">보내기</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast">전송되었습니다 💌</div>
+
+<script>
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+  }
+
+  const threadId = window.location.pathname.split("/").pop();
+  let currentPage = 0;
+  let totalPages = 1;
+
+  async function loadMessagePage(page = 0) {
+    const res = await fetch(`/api/threads/${threadId}/messages?page=${page}`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!res.ok) {
+      messageContainer.innerHTML =
+              `<div class="message-empty">아직 작성된 일기가 없습니다.</div>`;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+
+    const data = await res.json();
+    currentPage = data.currentPage;
+    totalPages = data.totalPages;
+
+    diaryTitle.textContent = data.threadTitle ?? "교환일기";
+
+    messageContainer.innerHTML = `
+      <div class="message-meta">
+          📆 ${data.createdAt.replace('T', ' ')}<br>
+          👤 ${data.senderNickname}
+      </div>
+      <div class="message-content">${data.content}</div>
+    `;
+
+    prevBtn.disabled = currentPage >= totalPages - 1;
+    nextBtn.disabled = currentPage <= 0;
+  }
+
+  prevBtn.onclick = () => loadMessagePage(currentPage + 1);
+  nextBtn.onclick = () => loadMessagePage(currentPage - 1);
+
+  document.getElementById("sendBtn").onclick = async () => {
+    const content = document.getElementById("newMessageContent").value.trim();
+    if (!content) {
+      showToast("내용을 입력해주세요 ✏️");
+      return;
+    }
+
+    const res = await fetch(`/api/threads/${threadId}/messages`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ content })
+    });
+
+    if (res.ok) {
+      document.getElementById("newMessageContent").value = "";
+      showToast("전송되었습니다 💌");
+      loadMessagePage(0);
+    }
+  };
+
+  loadMessagePage(0);
+</script>
+
+</body>
+</html>
