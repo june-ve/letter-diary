@@ -112,6 +112,14 @@
         .modal-content button:hover {
             background: #9e5641;
         }
+
+        .error-message {
+            font-size: 13px;
+            color: #b74d37;
+            margin-top: 8px;
+            display: none;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -132,6 +140,7 @@
         <div style="margin-bottom: 8px; font-size: 15px; font-weight: 600;">함께 일기를 작성할 사람의 이메일</div>
         <input type="email" id="partnerEmailInput" placeholder="example@email.com">
         <button id="submitEmailBtn">일기장 만들기</button>
+        <div class="error-message" id="addThreadError"></div>
     </div>
 </div>
 
@@ -181,6 +190,7 @@
     const addBtn = document.getElementById("addThreadBtn");
     const emailModal = document.getElementById("emailModal");
     const submitEmailBtn = document.getElementById("submitEmailBtn");
+    const addThreadError = document.getElementById("addThreadError");
 
     addBtn.onclick = () => {
         emailModal.style.display = "flex";
@@ -196,7 +206,8 @@
     submitEmailBtn.onclick = async () => {
         const email = document.getElementById("partnerEmailInput").value.trim();
         if (!email) {
-            alert("이메일을 입력해주세요.");
+            addThreadError.style.display = "block";
+            addThreadError.textContent = "이메일을 입력해주세요.";
             return;
         }
 
@@ -214,13 +225,10 @@
             document.getElementById("partnerEmailInput").value = "";
             alert("교환일기가 생성되었습니다!");
             loadThreads();
-        } else if (res.status === 404) {
-            alert("해당 이메일의 사용자가 없습니다.");
-        } else if (res.status === 409) {
-            alert("이미 해당 사용자와 교환일기가 존재합니다.");
-        } else {
-            alert("일기장을 생성하지 못했습니다.");
         }
+        const errData = await res.json();
+        addThreadError.style.display = "block";
+        addThreadError.textContent = errData.message || "일기장을 생성하지 못했습니다.";
     };
 
     loadThreads();
