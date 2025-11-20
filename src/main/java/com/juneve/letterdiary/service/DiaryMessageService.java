@@ -34,7 +34,13 @@ public class DiaryMessageService {
         DiaryMessage message = DiaryMessage.of(request.getContent(), sender, thread);
         DiaryMessage savedMessage = messageRepository.save(message);
 
-        eventPublisher.publishEvent(new MessageCreatedEvent(savedMessage));
+        eventPublisher.publishEvent(
+                new MessageCreatedEvent(
+                        thread.getTitle(),
+                        identifyTargetEmail(sender, thread),
+                        createPreviewContent(request.getContent())
+                )
+        );
 
         return savedMessage;
     }
@@ -49,6 +55,18 @@ public class DiaryMessageService {
         if (!isParticipant) {
             throw new IllegalStateException("이 일기장에 접근할 권한이 없습니다.");
         }
+    }
+
+    private String identifyTargetEmail(User sender, DiaryThread thread) {
+        return sender.equals(thread.getUserA())
+                ? thread.getUserB().getEmail()
+                : thread.getUserA().getEmail();
+    }
+
+    private String createPreviewContent(String content) {
+        return content.length() > 30
+                ? content.substring(0, 30) + "..."
+                : content;
     }
 
     /**
