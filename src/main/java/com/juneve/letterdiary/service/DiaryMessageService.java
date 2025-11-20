@@ -5,9 +5,11 @@ import com.juneve.letterdiary.dto.response.DiaryMessagePageResponse;
 import com.juneve.letterdiary.entity.DiaryMessage;
 import com.juneve.letterdiary.entity.DiaryThread;
 import com.juneve.letterdiary.entity.User;
+import com.juneve.letterdiary.event.MessageCreatedEvent;
 import com.juneve.letterdiary.repository.DiaryMessageRepository;
 import com.juneve.letterdiary.repository.DiaryThreadRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,21 @@ public class DiaryMessageService {
 
     private final DiaryMessageRepository messageRepository;
     private final DiaryThreadRepository threadRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * 특정 일기장에 메시지 작성
+     * 특정 일기장에 메시지 작성 (즉시 작성하고 비동기 이벤트 발생)
      */
     public DiaryMessage writeMessage(User sender, Long threadId, DiaryMessageRequest request) {
         DiaryThread thread = findThreadById(threadId);
         validateParticipant(sender, thread);
 
         DiaryMessage message = DiaryMessage.of(request.getContent(), sender, thread);
-        return messageRepository.save(message);
+        DiaryMessage savedMessage = messageRepository.save(message);
+
+        eventPublisher.publishEvent(new MessageCreatedEvent(savedMessage));
+
+        return savedMessage;
     }
 
     private DiaryThread findThreadById(Long threadId) {
