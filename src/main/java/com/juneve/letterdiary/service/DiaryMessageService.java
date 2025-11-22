@@ -8,6 +8,7 @@ import com.juneve.letterdiary.entity.User;
 import com.juneve.letterdiary.event.MessageCreatedEvent;
 import com.juneve.letterdiary.repository.DiaryMessageRepository;
 import com.juneve.letterdiary.repository.DiaryThreadRepository;
+import com.juneve.letterdiary.validator.DiaryValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -23,13 +24,14 @@ public class DiaryMessageService {
     private final DiaryMessageRepository messageRepository;
     private final DiaryThreadRepository threadRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final DiaryValidator diaryValidator;
 
     /**
      * 특정 일기장에 메시지 작성 (즉시 작성하고 비동기 이벤트 발생)
      */
     public DiaryMessage writeMessage(User sender, Long threadId, DiaryMessageRequest request) {
         DiaryThread thread = threadRepository.findThreadById(threadId);
-        validateParticipant(sender, thread);
+        diaryValidator.validateParticipant(sender, thread);
 
         DiaryMessage message = DiaryMessage.of(request.getContent(), sender, thread);
         DiaryMessage savedMessage = messageRepository.save(message);
@@ -43,13 +45,6 @@ public class DiaryMessageService {
         );
 
         return savedMessage;
-    }
-
-    private void validateParticipant(User user, DiaryThread thread) {
-        boolean isParticipant = thread.getUserA().equals(user) || thread.getUserB().equals(user);
-        if (!isParticipant) {
-            throw new IllegalStateException("이 일기장에 접근할 권한이 없습니다.");
-        }
     }
 
     private String identifyTargetEmail(User sender, DiaryThread thread) {
@@ -71,7 +66,7 @@ public class DiaryMessageService {
     public DiaryMessagePageResponse getMessagePage(User loginUser, long threadId, int page) {
 
         DiaryThread thread = threadRepository.findThreadById(threadId);
-        validateParticipant(loginUser, thread);
+        diaryValidator.validateParticipant(loginUser, thread);
 
         Page<DiaryMessage> messagePage = findPagedMessage(thread, page);
         DiaryMessage message = messagePage.hasContent()

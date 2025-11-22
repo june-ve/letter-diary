@@ -6,6 +6,7 @@ import com.juneve.letterdiary.entity.DiaryThread;
 import com.juneve.letterdiary.entity.User;
 import com.juneve.letterdiary.repository.DiaryThreadRepository;
 import com.juneve.letterdiary.repository.UserRepository;
+import com.juneve.letterdiary.validator.DiaryValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,34 +20,21 @@ import java.util.List;
 @Transactional
 public class DiaryThreadService {
 
-    private final DiaryThreadRepository diaryThreadRepository;
+    private final DiaryThreadRepository threadRepository;
     private final UserRepository userRepository;
+    private final DiaryValidator diaryValidator;
 
     /**
      * 교환일기 생성
      */
     public DiaryThread createThread(User userA, String partnerEmail) {
-        User userB = findUserByEmail(partnerEmail);
-        validateDuplicateThread(userA, userB);
+        User userB = userRepository.findUserByEmail(partnerEmail);
+        diaryValidator.validateDuplicateThread(userA, userB);
 
         String title = generateTitle(userA, userB);
         DiaryThread thread = buildDiaryThread(userA, userB, title);
 
-        return diaryThreadRepository.save(thread);
-    }
-
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("상대 사용자가 존재하지 않습니다."));
-    }
-
-    /**
-     * 두 사용자 간 중복된 일기장 존재 여부 확인
-     */
-    private void validateDuplicateThread(User userA, User userB) {
-        if (diaryThreadRepository.existsByUserAAndUserBOrUserAAndUserB(userA, userB, userB, userA)) {
-            throw new IllegalArgumentException("이미 교환일기가 존재합니다.");
-        }
+        return threadRepository.save(thread);
     }
 
     private String generateTitle(User userA, User userB) {
@@ -66,7 +54,7 @@ public class DiaryThreadService {
      */
     @Transactional(readOnly = true)
     public List<DiaryThreadListResponse> getThreadsByUser(User user) {
-        List<DiaryThread> threads = diaryThreadRepository.findAllByUser(user);
+        List<DiaryThread> threads = threadRepository.findAllByUser(user);
 
         return threads.stream()
                 .sorted(Comparator.comparing(this::extractLastMessageTime))

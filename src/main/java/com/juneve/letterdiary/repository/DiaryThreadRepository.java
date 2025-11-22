@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public interface DiaryThreadRepository extends JpaRepository<DiaryThread, Long> {
 
@@ -19,7 +20,7 @@ public interface DiaryThreadRepository extends JpaRepository<DiaryThread, Long> 
 
     default DiaryThread findThreadById(Long threadId) {
         return findById(threadId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일기장이 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 일기장이 존재하지 않습니다."));
     }
 
     /**
