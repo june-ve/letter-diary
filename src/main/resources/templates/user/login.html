@@ -176,6 +176,13 @@
 
 <body>
 
+<script>
+    const existingToken = localStorage.getItem("token");
+    if (existingToken) {
+        window.location.href = "/diary";
+    }
+</script>
+
 <div class="login-card">
     <div class="login-title">LetterDiary</div>
     <div class="login-subtitle">따뜻한 마음을 기록하는 공간</div>

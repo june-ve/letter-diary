@@ -6,6 +6,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PageController {
 
+    /** 홈페이지 접속 시 로그인 페이지로 이동 */
+    @GetMapping("/")
+    public String home() {
+        return "user/login";
+    }
+
     /** 로그인 페이지 */
     @GetMapping("/login")
     public String loginPage() {
