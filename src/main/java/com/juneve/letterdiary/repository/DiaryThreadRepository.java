@@ -21,4 +21,9 @@ public interface DiaryThreadRepository extends JpaRepository<DiaryThread, Long> 
         return findById(threadId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 일기장이 존재하지 않습니다."));
     }
+
+    /**
+     * (UserA, UserB) 조합 혹은 (UserB, UserA) 조합이 존재하는지 확인
+     */
+    boolean existsByUserAAndUserBOrUserAAndUserB(User userA1, User userB1, User userA2, User userB2);
 }

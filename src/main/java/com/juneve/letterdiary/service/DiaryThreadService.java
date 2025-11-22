@@ -44,12 +44,7 @@ public class DiaryThreadService {
      * 두 사용자 간 중복된 일기장 존재 여부 확인
      */
     private void validateDuplicateThread(User userA, User userB) {
-        boolean exists = diaryThreadRepository.findAll().stream()
-                .anyMatch(t ->
-                        (t.getUserA().equals(userA) && t.getUserB().equals(userB)) ||
-                        (t.getUserA().equals(userB) && t.getUserB().equals(userA))
-                );
-        if (exists) {
+        if (diaryThreadRepository.existsByUserAAndUserBOrUserAAndUserB(userA, userB, userB, userA)) {
             throw new IllegalArgumentException("이미 교환일기가 존재합니다.");
         }
     }
