@@ -21,7 +21,7 @@ public class MessageEventListener {
         log.info("📨 [ASYNC] 이메일 알림 전송 시작");
 
         emailService.sendNewMessageAlert(
-                event.getTargetEmail(), event.getThreadTitle(), event.getPreviewContent()
+                event.targetEmail(), event.threadTitle(), event.previewContent()
         );
 
         log.info("📨 [ASYNC] 이메일 알림 전송 완료");
