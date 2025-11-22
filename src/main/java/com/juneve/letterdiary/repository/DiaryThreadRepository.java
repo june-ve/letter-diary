@@ -16,4 +16,9 @@ public interface DiaryThreadRepository extends JpaRepository<DiaryThread, Long> 
         WHERE t.userA = :user OR t.userB = :user
     """)
     List<DiaryThread> findAllByUser(@Param("user") User user);
+
+    default DiaryThread findThreadById(Long threadId) {
+        return findById(threadId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 일기장이 존재하지 않습니다."));
+    }
 }

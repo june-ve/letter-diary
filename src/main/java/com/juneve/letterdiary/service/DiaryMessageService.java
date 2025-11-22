@@ -28,7 +28,7 @@ public class DiaryMessageService {
      * 특정 일기장에 메시지 작성 (즉시 작성하고 비동기 이벤트 발생)
      */
     public DiaryMessage writeMessage(User sender, Long threadId, DiaryMessageRequest request) {
-        DiaryThread thread = findThreadById(threadId);
+        DiaryThread thread = threadRepository.findThreadById(threadId);
         validateParticipant(sender, thread);
 
         DiaryMessage message = DiaryMessage.of(request.getContent(), sender, thread);
@@ -43,11 +43,6 @@ public class DiaryMessageService {
         );
 
         return savedMessage;
-    }
-
-    private DiaryThread findThreadById(Long threadId) {
-        return threadRepository.findById(threadId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일기장이 존재하지 않습니다."));
     }
 
     private void validateParticipant(User user, DiaryThread thread) {
@@ -75,7 +70,7 @@ public class DiaryMessageService {
     @Transactional(readOnly = true)
     public DiaryMessagePageResponse getMessagePage(User loginUser, long threadId, int page) {
 
-        DiaryThread thread = findThreadById(threadId);
+        DiaryThread thread = threadRepository.findThreadById(threadId);
         validateParticipant(loginUser, thread);
 
         Page<DiaryMessage> messagePage = findPagedMessage(thread, page);
