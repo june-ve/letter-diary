@@ -59,7 +59,7 @@ public class DiaryThreadService {
         List<DiaryThread> threads = threadRepository.findAllByUser(user);
 
         return threads.stream()
-                .sorted(Comparator.comparing(this::extractLastMessageTime))
+                .sorted(Comparator.comparing(this::extractLastMessageTime).reversed())
                 .map(DiaryThreadListResponse::from)
                 .toList();
     }
