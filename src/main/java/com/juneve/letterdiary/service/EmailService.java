@@ -15,7 +15,7 @@ public class EmailService {
 
     public void sendNewMessageAlert(String to, String threadTitle, String previewContent) {
 
-        String subject = "[Letter Diary] 💌 새 교환일기 알림";
+        String subject = "[LetterDiary] 💌 새 교환일기 알림";
         String text = """
                 새로운 교환일기가 도착했습니다!
 
