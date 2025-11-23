@@ -289,6 +289,47 @@
   prevBtn.onclick = () => loadMessagePage(currentPage + 1);
   nextBtn.onclick = () => loadMessagePage(currentPage - 1);
 
+  document.getElementById("downloadBtn").onclick = async () => {
+    const res = await fetch(`/api/threads/${threadId}/download`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!res.ok) {
+      showToast("다운로드 중 오류가 발생했습니다.");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    // 헤더에서 파일명 추출
+    const disposition = res.headers.get("Content-Disposition");
+    let filename = "diary.txt";
+
+    if (disposition) {
+      const utf8FilenameRegex = /filename\*=UTF-8''([^;]+)/i;
+      const asciiFilenameRegex = /filename=(["']?)(.*?[^\\])\1(?:; ?|$)/i;
+
+      if (utf8FilenameRegex.test(disposition)) {
+        const match = disposition.match(utf8FilenameRegex);
+        filename = decodeURIComponent(match[1]);
+      } else if (asciiFilenameRegex.test(disposition)) {
+        const match = disposition.match(asciiFilenameRegex);
+        filename = match[2].replace(/"/g, '');
+      }
+    }
+
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+
+    a.click();
+    showToast("다운로드가 완료되었습니다 ✨");
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   document.getElementById("sendBtn").onclick = async () => {
     const content = document.getElementById("newMessageContent").value.trim();
     if (!content) {
